@@ -121,7 +121,7 @@ function SW({ route, navigation }) {
         };
       // setModalVisible(true);
       console.log(info);
-      // 
+
       fetch('https://winsouls.co.za/app/area/save_coords.php', {
         method: 'post',
         headers:{
