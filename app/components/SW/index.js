@@ -30,6 +30,7 @@ function SW({ route, navigation }) {
   const [state, set_state] = useState('');
   const [receptive, set_receptive] = useState('');
   const [followup, set_followup] = useState('');
+  const [single_location, set_single_location] = useState(null);
 
   function makeTwoDigits (time) {
     const timeString = `${time}`;
@@ -97,6 +98,7 @@ function SW({ route, navigation }) {
     console.log('state: '+state);
     console.log('receptive: '+receptive);
     console.log('followup: '+followup);
+    console.log('single_location: '+single_location);
   }
   function enterId() {
     set_area_ID('');
@@ -108,6 +110,13 @@ function SW({ route, navigation }) {
     getArea();
   }
   function start_capture() {
+    set_person_name('');
+    set_phone_number('');
+    set_social_number('');
+    set_state('');
+    set_receptive('');
+    set_followup('');
+    set_single_location('');
     setModalVisible3(true);
   }
   function confirmInfo() {
@@ -272,12 +281,14 @@ function SW({ route, navigation }) {
       state_setter:set_state,
       receptive_setter:set_receptive,
       followup_setter:set_followup,
+      coords_setter: set_single_location,
       person_name: person_name,
       phone_number: phone_number,
       social_number:social_number,
       state:state,
       receptive:receptive,
       followup:followup,
+      coords: single_location,
       type: 'capture_details',
       title: 'Capturing person\'s details'
     },

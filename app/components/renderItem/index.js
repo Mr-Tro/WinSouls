@@ -57,12 +57,14 @@ const renderItem = ({ item }) => {
         state_setter={item.state_setter}
         receptive_setter={item.receptive_setter}
         followup_setter={item.followup_setter}
+        coords_setter={item.coords_setter}
         person_name={item.person_name}
         phone_number={item.phone_number}
         social_number={item.social_number}
         state={item.state}
         receptive={item.receptive}
         followup={item.followup}
+        coords={item.coords}
         />
       );
     }

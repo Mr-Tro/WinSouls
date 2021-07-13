@@ -2,21 +2,36 @@ import * as React from 'react';
 import { View, Text, TextInput,Modal, TouchableHighlight, FlatList, SafeAreaView  , StyleSheet } from 'react-native';//Picker, 
 import {Picker} from '@react-native-community/picker';
 import { useState, useEffect } from "react";
-
+import * as Location from 'expo-location';
 
 const Capture_Interaction = (props) => {
     
   const [go_disabled, set_go_disabled] = useState(false);
 
+  
+
   function confirmInfo() {
     props.mSet();
     props.go();
   }
-  function fireOnChange(pickedVal) {
-    props.func(pickedVal);
-    
-    set_go_disabled(pickedVal=='');
-    console.log(go_disabled);
+  function fireOnChange(val) {
+    props.person_name_setter(val);
+    // useEffect(() => {
+    //   let didCancel = false;
+      async function fetchMyAPI() {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setErrorMsg('Permission to access location was denied');
+        }
+        let location = await Location.getCurrentPositionAsync({accuracy:Location.Accuracy.Highest});
+        let coords = JSON.stringify(location.coords.latitude) + ',' + JSON.stringify(location.coords.longitude);
+        props.coords_setter(coords);
+      }
+  
+      fetchMyAPI()
+    //   return () => { didCancel = true; }; // Remember if we start fetching something else
+    // }, []);
+  
   }
     
     const DATA = [
@@ -31,7 +46,7 @@ const Capture_Interaction = (props) => {
           value: props.person_name,
           style: styles.txt,
           type: 'textbox',
-          func: props.person_name_setter
+          func: fireOnChange
         },
         {
           id: "3",
@@ -66,7 +81,7 @@ const Capture_Interaction = (props) => {
           style: styles.picker,
           type: 'select',
           func: props.receptive_setter,
-          picks: [{id:1,label:'True',value:true},{id:2,label:'False',value:false}]
+          picks: [{id:1,label:'Yes',value:true},{id:2,label:'No',value:false}]
         },
         {
           id: '7',
@@ -75,7 +90,11 @@ const Capture_Interaction = (props) => {
           style: styles.picker,
           type: 'select',
           func: props.followup_setter,
-          picks: [{id:1,label:'True',value:true},{id:2,label:'False',value:false}]
+          picks: [{id:1,label:'Yes',value:true},{id:2,label:'No',value:false}]
+        },{
+          id: '8',
+          title: props.coords,
+          type: 'secondary_label'
         }
       ];
     return (
@@ -157,6 +176,16 @@ const renderItem = ({ item }) => {
           
           <Text style={{width:'100%',fontSize:22,fontWeight:'bold',color:'#606066'}}>
             {item.title}
+          </Text>
+        </View>
+        
+      );
+    }
+    if (item.type=='secondary_label') {
+      return (
+        <View style={{width:'100%',marginBottom:20,flexDirection:'row',position:'relative',zIndex:10}}>
+          <Text style={{width:'100%',fontSize:12,fontWeight:'bold',color:'#606066'}}>
+            Coordinates: {item.title}
           </Text>
         </View>
         
