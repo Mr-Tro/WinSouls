@@ -72,7 +72,8 @@ const Capture_Interaction = (props) => {
           type: 'select',
           func: props.state_setter,
           picks: [{id:1,label:'Saved',value:'Saved'},{id:2,label:'Listened',value:'Listened'}
-                    ,{id:3,label:'Interupted',value:'Interupted'}]
+                    ,{id:3,label:'Interupted',value:'Interupted'}
+                    ,{id:4,label:'Not interested',value:'Not interested'}]
         },
         {
           id: '6',
@@ -81,7 +82,7 @@ const Capture_Interaction = (props) => {
           style: styles.picker,
           type: 'select',
           func: props.receptive_setter,
-          picks: [{id:1,label:'Yes',value:true},{id:2,label:'No',value:false}]
+          picks: [{id:1,label:'Yes',value:1},{id:2,label:'No',value:0}]
         },
         {
           id: '7',
@@ -90,7 +91,7 @@ const Capture_Interaction = (props) => {
           style: styles.picker,
           type: 'select',
           func: props.followup_setter,
-          picks: [{id:1,label:'Yes',value:true},{id:2,label:'No',value:false}]
+          picks: [{id:1,label:'Yes',value:1},{id:2,label:'No',value:0}]
         },{
           id: '8',
           title: props.coords,

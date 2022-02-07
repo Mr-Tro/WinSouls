@@ -1,16 +1,12 @@
 // import 'react-native-gesture-handler';
-import React, { useRef } from 'react';
+import * as React from 'react';
 import { Picker, SafeAreaView, View, FlatList, Text, TextInput,
   StyleSheet, TouchableOpacity, Button } from 'react-native';
 import { useState, useEffect } from "react";
 import * as TaskManager from 'expo-task-manager';
 import * as Location from 'expo-location';
-import * as FileSystem from 'expo-file-system';
-import myMap from '../LeafletMap';
-import { WebView } from 'react-native-webview';
 // import MyModal from '../myModal';
 // import areaId from '../myModal/areaId';
-import html_script from '../LeafletMap/html_script';
 import renderItem from '../renderItem';
 
 const CAPTURE_LOCATIONS_TASK = 'background-location-task';
@@ -36,22 +32,12 @@ function SW({ route, navigation }) {
   const [followup, set_followup] = useState('');
   const [single_location, set_single_location] = useState(null);
 
-  async function check_if_running() {
-    let file_name = FileSystem.documentDirectory + 'test' + '.txt';
-    let file_existance = await FileSystem.getInfoAsync(file_name,{ encoding: FileSystem.EncodingType.UTF8 });
-    if (file_existance.exists) {
-      retrieve_txt_file('test');
-    }
-  }
-  check_if_running();
-  
-
   function makeTwoDigits (time) {
     const timeString = `${time}`;
     if (timeString.length === 2) return time
     return `0${time}`
   }
-  var backgroundLocationsCapture = async () => {
+  backgroundLocationsCapture = async () => {
     const { status } = await Location.requestBackgroundPermissionsAsync();
     if (status === 'granted') {
       alert('Background permissions granted!');
@@ -73,8 +59,6 @@ function SW({ route, navigation }) {
     Location.hasStartedLocationUpdatesAsync(CAPTURE_LOCATIONS_TASK).then((value) => {
       if (value) {
         Location.stopLocationUpdatesAsync(CAPTURE_LOCATIONS_TASK);
-        save_txt_file('test','Nothing.');
-        retrieve_txt_file('test');
         alert('Soul winning done!');
       }
     });
@@ -97,37 +81,8 @@ function SW({ route, navigation }) {
     setModalVisible3(!modalVisible3);
   }
   const [confirmText, setConfirmText] = useState('');
-  async function save_txt_file(name,text) {
-    let file_name = FileSystem.documentDirectory + name + '.txt';
-    let file = await FileSystem.writeAsStringAsync(file_name, text, { encoding: FileSystem.EncodingType.UTF8 });
-  }
-  async function retrieve_txt_file(name) {
-    // console.log('retrieve_txt_file function entrance');
-    let file_name = FileSystem.documentDirectory + name + '.txt';
-    let file = await FileSystem.readAsStringAsync(file_name,{ encoding: FileSystem.EncodingType.UTF8 });
-    let soul_winning_right_now = (file=='Something.');
-    // console.log(file);
-    // console.log('soul_winning_right_now: '+soul_winning_right_now);
-    // console.log('retrieve_txt_file function exit');
-    if (soul_winning_right_now) {
-      set_lead_user_btn_disabled(true);
-      set_reg_user_btn_disabled(true);
-      set_capture_btn_disabled(false);
-      set_end_btn_disabled(false);
-      // set_use_btn_disabled(false);
-    }else{
-      set_lead_user_btn_disabled(false);
-      set_reg_user_btn_disabled(false);
-      set_capture_btn_disabled(true);
-      set_end_btn_disabled(true);
-      // set_use_btn_disabled(true);
-    }
-    return file;
-  }
   function go() {
-    save_txt_file('test','Something.');
-    retrieve_txt_file('test');
-    // console.log('ID: '+area_ID);
+    console.log('ID: '+area_ID);
     backgroundLocationsCapture();
     set_capture_btn_disabled(false);
     set_end_btn_disabled(false);
@@ -156,7 +111,7 @@ function SW({ route, navigation }) {
       },
       body: JSON.stringify(info)
     }).then((response)=>response.json()).then((responseJSon)=>{
-      // console.log(responseJSon);
+      console.log(responseJSon);
       set_area_picks(responseJSon);
     }).catch((error) => {
       console.error(error);
@@ -198,7 +153,7 @@ function SW({ route, navigation }) {
           area_ID:area_ID
         };
       // setModalVisible(true);
-      // console.log(info);
+      console.log(info);
 
       fetch('https://winsouls.co.za/app/area/save_coords.php', {
         method: 'post',
@@ -235,7 +190,7 @@ function SW({ route, navigation }) {
       },
       body: JSON.stringify(info)
     }).then((response)=>response.json()).then((responseJSon)=>{
-      // console.log(responseJSon);
+      console.log(responseJSon);
       set_area_picks(responseJSon);
     }).catch((error) => {
       console.error(error);
@@ -317,13 +272,8 @@ function SW({ route, navigation }) {
       onPress: () => confirmInfo(),
       btnDisabled: use_btn_disabled
     }
-    // ,{
-    //   id: "16",
-    //   title: "My Map",
-    //   type: 'webMap'
-    // }
     ,{
-      id: '18',
+      id: '16',
       title: "Modal",
       modalVisible: modalVisible,
       hideModal: () => hideModal(),
@@ -332,7 +282,7 @@ function SW({ route, navigation }) {
       go: () => go(),
       type: 'areaId',
     },{
-      id: '19',
+      id: '17',
       title: "Modal2",
       modalVisible: modalVisible2,
       hideModal: () => hideModal2(),
@@ -344,7 +294,7 @@ function SW({ route, navigation }) {
       picks: area_picks 
       //[{id:2,label:'Vlakfontein',value:100},{id:3,label:'Lenasia',value:144}]
     },{
-      id: '20',
+      id: '18',
       title: "Modal3",
       modalVisible: modalVisible3,
       hideModal: () => hideModal3(),
@@ -368,32 +318,16 @@ function SW({ route, navigation }) {
     },
   ];
   
-  // _goToMyPosition = (lat,lon) =>{
-  //   this.refs['Map_Ref'].injectJavascript(`
-  //     map.setView([${lat,lon}],15);
-  //     `
-  //   )
-  // }
   
-  _goToMyPosition = (lat,lon) =>{
-    const Map_Ref =  useRef();
-    Map_Ref.injectJavascript(`
-      map.setView([${lat,lon}],15);
-      `
-    );
-  }
   return (
+    
     <SafeAreaView style={{ flex: 1,
-      // flexDirection: 'row',
-      // flexWrap: 'wrap',
-      // alignItems: 'flex-end',
-       width:'100%', marginLeft:'0%', marginTop:'0%' }}>
-      <WebView 
-      // ref={'Map_Ref'} 
-      source={{ html: html_script }} style={styles.webViewStyle}/>
-        <FlatList
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'flex-start', width:'95%', marginLeft:'2.5%', marginTop:'10%' }}>
+      <FlatList
         data={DATA}
-        style = {{width:'100%',height:'0%',top:'5%'}}
+        style = {{width:'90%'}}
         numColumns = {2}
         renderItem={renderItem}
       />
@@ -407,10 +341,6 @@ export default SW;
 
 
 const styles = StyleSheet.create({
-  webViewStyle: {
-    width: '100%',
-    height: '50%',
-  },
   heading: {
       // marginVertical: 10,
       textAlign: "center",
@@ -450,16 +380,16 @@ const styles = StyleSheet.create({
   },
   btn:{
       width: '46%',
-      height: 40,
+      height: 80,
       marginLeft: '2%',
       marginRight: '2%',
-      padding: 5,
+      padding: 15,
       textAlign: "center",
       backgroundColor: '#3293a8',
       color: 'white',
       // borderWidth: 1,
-      // borderRadius: 5,
-      marginBottom: 10
+      borderRadius: 5,
+      marginBottom: 30
   },
   btn2:{
     width: '96%',
