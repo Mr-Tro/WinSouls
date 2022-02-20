@@ -65,6 +65,9 @@ const renderItem = ({ item }) => {
         receptive={item.receptive}
         followup={item.followup}
         coords={item.coords}
+
+        webview_key_setter={item.webview_key_setter}
+        webview_key={item.webview_key}
         />
       );
     }
@@ -119,8 +122,9 @@ const renderItem = ({ item }) => {
       );
     }
     if (item.type=='button') {
+      let bgColor = (item.bgColor!==undefined)? item.bgColor:'#3293a8';
       return (
-        <TouchableOpacity onPress={item.onPress} style={item.style} disabled={item.btnDisabled}>
+        <TouchableOpacity onPress={item.onPress} style={[item.style,{backgroundColor:bgColor}]} disabled={item.btnDisabled}>
           <Text style={item.styleSub}>{item.title}</Text>
         </TouchableOpacity>
       );

@@ -79,8 +79,8 @@ const styles = StyleSheet.create({
   mylogo: {
     alignSelf: 'center',
     marginVertical: 30,
-    left: -30,
-    width: 130,
-    height: 80,
+    left: -10,
+    width: 100,
+    height: 60,
   },
 });

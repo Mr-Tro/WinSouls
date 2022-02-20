@@ -130,7 +130,7 @@ const Capture_Interaction = (props) => {
                         disabled={go_disabled}
                         style={{ ...styles.openButton, backgroundColor: '#1cd400', width:'49%',marginLeft:'1%' }}
                         onPress={() => {
-                            confirmInfo();
+                            confirmInfo(); props.webview_key_setter(props.webview_key+1);
                         }}>
                         <Text style={styles.textStyle}>Save</Text>
                         </TouchableHighlight>

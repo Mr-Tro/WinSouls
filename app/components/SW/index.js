@@ -35,6 +35,22 @@ function SW({ route, navigation }) {
   const [receptive, set_receptive] = useState('');
   const [followup, set_followup] = useState('');
   const [single_location, set_single_location] = useState(null);
+  
+  const [webview_key, set_webview_key] = useState(0);
+  const [current_location, set_current_location] = useState('-26.2041,28.0473');
+
+  async function fetchMyCurrentLocation() {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      setErrorMsg('Permission to access location was denied');
+    }
+    let location = await Location.getCurrentPositionAsync({accuracy:Location.Accuracy.Highest});
+    let coords = JSON.stringify(location.coords.latitude) + ',' + JSON.stringify(location.coords.longitude);
+    set_current_location(coords);
+    // console.log(current_location);
+  }
+
+  fetchMyCurrentLocation()
 
   async function check_if_running() {
     let file_name = FileSystem.documentDirectory + 'test' + '.txt';
@@ -45,6 +61,7 @@ function SW({ route, navigation }) {
   }
   check_if_running();
   
+  // setInterval(()=>{ set_webview_key(webview_key+1); console.log('webview_key: '+webview_key); },6000);
 
   function makeTwoDigits (time) {
     const timeString = `${time}`;
@@ -127,7 +144,7 @@ function SW({ route, navigation }) {
   function go() {
     save_txt_file('test','Something.');
     retrieve_txt_file('test');
-    // console.log('ID: '+area_ID);
+    console.log('ID: '+area_ID);
     backgroundLocationsCapture();
     set_capture_btn_disabled(false);
     set_end_btn_disabled(false);
@@ -190,6 +207,7 @@ function SW({ route, navigation }) {
   }
   function confirmInfo() {
     if (true) {
+      set_use_btn_disabled(true);
         setConfirmText('Confirm');
         let info = {
           userId:user_details.id,
@@ -198,7 +216,7 @@ function SW({ route, navigation }) {
           area_ID:area_ID
         };
       // setModalVisible(true);
-      // console.log(info);
+      console.log(info);
 
       fetch('https://winsouls.co.za/app/area/save_coords.php', {
         method: 'post',
@@ -210,6 +228,7 @@ function SW({ route, navigation }) {
       }).then((response)=>response.json()).then((responseJSon)=>{
         console.log(responseJSon);
         if (responseJSon.status==1) {
+          set_webview_key(webview_key+1);
           alert('Success: '+responseJSon.msg);
         }else{
           alert(responseJSon.msg);
@@ -252,7 +271,7 @@ function SW({ route, navigation }) {
       let loc = captured_locations;
       let coords = coordsArr;
 
-      currentTime =  new Date(locations[0].timestamp);
+      let currentTime =  new Date(locations[0].timestamp);
       let hour = currentTime.getHours();
       let minutes = currentTime.getMinutes();
       let tempTime = `${makeTwoDigits(hour)}:${makeTwoDigits(minutes)}`;
@@ -262,6 +281,7 @@ function SW({ route, navigation }) {
       set_captured_locations(loc);
       coords.push(ltlng);
       set_coordsArr(coords);
+      set_current_location(ltlng);
     }
   });
   const DATA = [
@@ -274,6 +294,7 @@ function SW({ route, navigation }) {
       id: "2",
       title: "Start as Regular",
       style: styles.btn,
+      bgColor: 'navy',
       flex: 1,
       styleSub: {color:'white',textAlign: 'center', justifyContent: "center",fontSize: 16,},
       type: 'button',
@@ -283,6 +304,7 @@ function SW({ route, navigation }) {
       id: "3",
       title: "Start as Leader",
       style: styles.btn,
+      bgColor: 'navy',
       flex: 1,
       styleSub: {color:'white',textAlign: 'center', justifyContent: "center",fontSize: 16,},
       type: 'button',
@@ -292,6 +314,7 @@ function SW({ route, navigation }) {
       id: "4",
       title: "Capture Interaction",
       style: styles.btn,
+      bgColor: 'orange',
       flex: 1,
       styleSub: {color:'white',textAlign: 'center', justifyContent: "center",fontSize: 16,},
       type: 'button',
@@ -301,6 +324,7 @@ function SW({ route, navigation }) {
       id: "5",
       title: "End Soul Winning",
       style: styles.btn,
+      bgColor: 'red',
       flex: 1,
       styleSub: {color:'white',textAlign: 'center', justifyContent: "center",fontSize: 16,},
       type: 'button',
@@ -311,6 +335,7 @@ function SW({ route, navigation }) {
       id: "15",
       title: "Use Locations",
       style: styles.btn2,
+      bgColor: 'maroon',
       flex: 1,
       styleSub: {color:'white',textAlign: 'center', justifyContent: "center",fontSize: 16,},
       type: 'button',
@@ -363,6 +388,8 @@ function SW({ route, navigation }) {
       receptive:receptive,
       followup:followup,
       coords: single_location,
+      webview_key_setter: set_webview_key,
+      webview_key: webview_key,
       type: 'capture_details',
       title: 'Capturing person\'s details'
     },
@@ -387,13 +414,18 @@ function SW({ route, navigation }) {
       // flexDirection: 'row',
       // flexWrap: 'wrap',
       // alignItems: 'flex-end',
-       width:'100%', marginLeft:'0%', marginTop:'0%' }}>
+       width:'100%', marginLeft:'0%', marginTop:'0%',height:'100%' }}>
       <WebView 
       // ref={'Map_Ref'} 
-      source={{ html: html_script }} style={styles.webViewStyle}/>
+      // source={{ html: html_script }} style={styles.webViewStyle}
+      key={webview_key}
+      source={{ uri: 'https://winsouls.co.za/app/map/?center='+current_location } } style={styles.webViewStyle}
+      >
+
+        </WebView>
         <FlatList
         data={DATA}
-        style = {{width:'100%',height:'0%',top:'5%'}}
+        style = {{width:'100%',bottom:'-3%',position:'absolute', zIndex:200 }}
         numColumns = {2}
         renderItem={renderItem}
       />
@@ -409,54 +441,19 @@ export default SW;
 const styles = StyleSheet.create({
   webViewStyle: {
     width: '100%',
-    height: '50%',
-  },
-  heading: {
-      // marginVertical: 10,
-      textAlign: "center",
-      fontWeight: "bold",
-      fontSize: 20,
-      width: '100%',
-      height: 40
-  },
-  txt:{
-      width: '100%',
-      height: 40,
-      // borderBottomWidth: '100%',
-      // textAlign: "center",
-      borderColor: "grey",
-      // fontWeight: 'bold',
-      borderWidth: StyleSheet.hairlineWidth,
-      // borderRadius: 5,
-      marginBottom: 10
-  },
-  pickerCont:{
-    width: '100%',
-    height: 50,
-    marginBottom: 10,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'grey'
-  },
-  picker:{
-    width: '100%',
-    textAlign: "center",
-    alignItems: 'center',
-    alignSelf: 'center',
-  },
-  itemStyle: {
-    textAlign: 'center',
-    alignSelf: 'center',
-    alignItems: 'center',
+    height: '100%',
+    
   },
   btn:{
       width: '46%',
-      height: 40,
+      // height: 40,
       marginLeft: '2%',
       marginRight: '2%',
       padding: 5,
       textAlign: "center",
       backgroundColor: '#3293a8',
       color: 'white',
+      borderRadius: 5,
       // borderWidth: 1,
       // borderRadius: 5,
       marginBottom: 10
@@ -465,20 +462,12 @@ const styles = StyleSheet.create({
     width: '96%',
     marginLeft: '2%',
     marginRight: '2%',
-    padding: 15,
+    padding: 2,
     textAlign: "center",
     backgroundColor: '#3293a8',
     color: 'white',
     // borderWidth: 1,
     borderRadius: 5,
     marginBottom: 30
-  },
-  timebtn:{
-    backgroundColor: 'grey',
-    width:'49%', marginLeft:'0.5%',marginRight:'0.5%',padding:10
-  },
-  timetxt:{
-    textAlign: 'center',
-    color: 'white'
   }
 });
