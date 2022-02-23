@@ -15,6 +15,16 @@ import renderItem from '../renderItem';
 
 const CAPTURE_LOCATIONS_TASK = 'background-location-task';
 
+async function save_txt_file(name,text) {
+  let file_name = FileSystem.documentDirectory + name + '.txt';
+  let file_contents = await FileSystem.writeAsStringAsync(file_name, text, { encoding: FileSystem.EncodingType.UTF8 });
+}
+async function retrieve_txt_file(name) {
+  let file_name = FileSystem.documentDirectory + name + '.txt';
+  let file_contents = await FileSystem.readAsStringAsync(file_name,{ encoding: FileSystem.EncodingType.UTF8 });
+  return file_contents;
+}
+
 function SW({ route, navigation }) {
   const user_details = {status:'Data Matched',full_name:'Test',cell:'0000',id:'1'};
   // const { user_details } = route.params;
@@ -39,7 +49,7 @@ function SW({ route, navigation }) {
   
   const [webview_key, set_webview_key] = useState(0);
   const [current_location, set_current_location] = useState('-26.2041,28.0473');
-  const [zoom_level, set_zoom_level] = useState(10);
+  const [zoom_level, set_zoom_level] = useState(13);
 
   async function fetchMyCurrentLocation() {
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -118,15 +128,7 @@ function SW({ route, navigation }) {
     setModalVisible3(!modalVisible3);
   }
   const [confirmText, setConfirmText] = useState('');
-  async function save_txt_file(name,text) {
-    let file_name = FileSystem.documentDirectory + name + '.txt';
-    let file_contents = await FileSystem.writeAsStringAsync(file_name, text, { encoding: FileSystem.EncodingType.UTF8 });
-  }
-  async function retrieve_txt_file(name) {
-    let file_name = FileSystem.documentDirectory + name + '.txt';
-    let file_contents = await FileSystem.readAsStringAsync(file_name,{ encoding: FileSystem.EncodingType.UTF8 });
-    return file_contents;
-  }
+  
   async function currently_soul_winning(file_name) {
     let contents = await retrieve_txt_file(file_name);
     console.log(contents);
