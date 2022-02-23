@@ -5,7 +5,8 @@ import { useState, useEffect } from "react";
 import renderItem from '../renderItem';
 
 function Register_Area({ route, navigation }) {
-  const { user_details } = route.params;
+  const user_details = {status:'Data Matched',full_name:'Test',cell:'0000',id:'1'};
+  // const { user_details } = route.params;
   // console.log(user_details);
   const [area_name, set_area_name] = useState([]);
   const [center_coords, set_center_coords] = useState([]);

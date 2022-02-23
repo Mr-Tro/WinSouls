@@ -11,7 +11,8 @@ function LogoTitle() {
   );
 }
 function HomeScreen({ route, navigation }) {
-  const { userDetails } = route.params;
+  const userDetails = {status:'Data Matched',full_name:'Test',cell:'0000',id:'1'};
+  // const { userDetails } = route.params;
   const DATA = [
     {
       id: '1',

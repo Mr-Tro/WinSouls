@@ -16,7 +16,8 @@ import renderItem from '../renderItem';
 const CAPTURE_LOCATIONS_TASK = 'background-location-task';
 
 function SW({ route, navigation }) {
-  const { user_details } = route.params;
+  const user_details = {status:'Data Matched',full_name:'Test',cell:'0000',id:'1'};
+  // const { user_details } = route.params;
   // console.log(user_details);
   const [captured_locations, set_captured_locations] = useState([]);
   const [coordsArr, set_coordsArr] = useState([]);
@@ -38,6 +39,7 @@ function SW({ route, navigation }) {
   
   const [webview_key, set_webview_key] = useState(0);
   const [current_location, set_current_location] = useState('-26.2041,28.0473');
+  const [zoom_level, set_zoom_level] = useState(10);
 
   async function fetchMyCurrentLocation() {
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -53,10 +55,10 @@ function SW({ route, navigation }) {
   fetchMyCurrentLocation()
 
   async function check_if_running() {
-    let file_name = FileSystem.documentDirectory + 'test' + '.txt';
+    let file_name = FileSystem.documentDirectory + 'running' + '.txt';
     let file_existance = await FileSystem.getInfoAsync(file_name,{ encoding: FileSystem.EncodingType.UTF8 });
     if (file_existance.exists) {
-      retrieve_txt_file('test');
+      currently_soul_winning('running');
     }
   }
   check_if_running();
@@ -90,11 +92,13 @@ function SW({ route, navigation }) {
     Location.hasStartedLocationUpdatesAsync(CAPTURE_LOCATIONS_TASK).then((value) => {
       if (value) {
         Location.stopLocationUpdatesAsync(CAPTURE_LOCATIONS_TASK);
-        save_txt_file('test','Nothing.');
-        retrieve_txt_file('test');
+        save_txt_file('running','Nothing.');
+        currently_soul_winning('running');
         alert('Soul winning done!');
       }
     });
+    set_zoom_level(10);
+    set_webview_key(webview_key+1);
     set_capture_btn_disabled(true);
     set_end_btn_disabled(true);
     set_reg_user_btn_disabled(false);
@@ -116,16 +120,17 @@ function SW({ route, navigation }) {
   const [confirmText, setConfirmText] = useState('');
   async function save_txt_file(name,text) {
     let file_name = FileSystem.documentDirectory + name + '.txt';
-    let file = await FileSystem.writeAsStringAsync(file_name, text, { encoding: FileSystem.EncodingType.UTF8 });
+    let file_contents = await FileSystem.writeAsStringAsync(file_name, text, { encoding: FileSystem.EncodingType.UTF8 });
   }
   async function retrieve_txt_file(name) {
-    // console.log('retrieve_txt_file function entrance');
     let file_name = FileSystem.documentDirectory + name + '.txt';
-    let file = await FileSystem.readAsStringAsync(file_name,{ encoding: FileSystem.EncodingType.UTF8 });
-    let soul_winning_right_now = (file=='Something.');
-    // console.log(file);
-    // console.log('soul_winning_right_now: '+soul_winning_right_now);
-    // console.log('retrieve_txt_file function exit');
+    let file_contents = await FileSystem.readAsStringAsync(file_name,{ encoding: FileSystem.EncodingType.UTF8 });
+    return file_contents;
+  }
+  async function currently_soul_winning(file_name) {
+    let contents = await retrieve_txt_file(file_name);
+    console.log(contents);
+    let soul_winning_right_now = contents == 'Something.';
     if (soul_winning_right_now) {
       set_lead_user_btn_disabled(true);
       set_reg_user_btn_disabled(true);
@@ -139,11 +144,12 @@ function SW({ route, navigation }) {
       set_end_btn_disabled(true);
       // set_use_btn_disabled(true);
     }
-    return file;
   }
   function go() {
-    save_txt_file('test','Something.');
-    retrieve_txt_file('test');
+    save_txt_file('running','Something.');
+    currently_soul_winning('running');
+    set_zoom_level(15);
+    set_webview_key(webview_key+1);
     console.log('ID: '+area_ID);
     backgroundLocationsCapture();
     set_capture_btn_disabled(false);
@@ -395,20 +401,6 @@ function SW({ route, navigation }) {
     },
   ];
   
-  // _goToMyPosition = (lat,lon) =>{
-  //   this.refs['Map_Ref'].injectJavascript(`
-  //     map.setView([${lat,lon}],15);
-  //     `
-  //   )
-  // }
-  
-  _goToMyPosition = (lat,lon) =>{
-    const Map_Ref =  useRef();
-    Map_Ref.injectJavascript(`
-      map.setView([${lat,lon}],15);
-      `
-    );
-  }
   return (
     <SafeAreaView style={{ flex: 1,
       // flexDirection: 'row',
@@ -419,7 +411,7 @@ function SW({ route, navigation }) {
       // ref={'Map_Ref'} 
       // source={{ html: html_script }} style={styles.webViewStyle}
       key={webview_key}
-      source={{ uri: 'https://winsouls.co.za/app/map/?center='+current_location } } style={styles.webViewStyle}
+      source={{ uri: 'https://winsouls.co.za/app/map/?center='+current_location+'&zoom_level='+zoom_level } } style={styles.webViewStyle}
       >
 
         </WebView>

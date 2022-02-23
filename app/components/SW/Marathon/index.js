@@ -7,7 +7,8 @@ import MyModal from '../../myModal';
 import renderItem from '../../renderItem';
 
 function SW({ route, navigation }) {
-  const { user_details } = route.params;
+  const user_details = {status:'Data Matched',full_name:'Test',cell:'0000',id:'1'};
+  // const { user_details } = route.params;
   const [busName, setBusName] = useState('');
   
   const [modalVisible, setModalVisible] = useState(false);
