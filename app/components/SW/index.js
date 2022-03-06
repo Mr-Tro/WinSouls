@@ -1,16 +1,11 @@
 // import 'react-native-gesture-handler';
 import React, { useRef } from 'react';
-import { Picker, SafeAreaView, View, FlatList, Text, TextInput,
-  StyleSheet, TouchableOpacity, Button } from 'react-native';
+import { SafeAreaView, View, FlatList, StyleSheet } from 'react-native';
 import { useState, useEffect } from "react";
 import * as TaskManager from 'expo-task-manager';
 import * as Location from 'expo-location';
 import * as FileSystem from 'expo-file-system';
-import myMap from '../LeafletMap';
 import { WebView } from 'react-native-webview';
-// import MyModal from '../myModal';
-// import areaId from '../myModal/areaId';
-import html_script from '../LeafletMap/html_script';
 import renderItem from '../renderItem';
 
 const CAPTURE_LOCATIONS_TASK = 'background-location-task';
@@ -29,6 +24,12 @@ function SW({ route, navigation }) {
   const user_details = {status:'Data Matched',full_name:'Test',cell:'0000',id:'1'};
   // const { user_details } = route.params;
   // console.log(user_details);
+  //////Registration setters////////
+  
+  const [first_name_reg, set_first_name_reg] = useState('');
+  const [last_name_reg, set_last_name_reg] = useState('');
+  const [phone_number_reg, set_phone_number_reg] = useState('');
+  ///////////////////////////
   const [captured_locations, set_captured_locations] = useState([]);
   const [coordsArr, set_coordsArr] = useState([]);
   const [area_ID, set_area_ID] = useState('');
@@ -46,6 +47,8 @@ function SW({ route, navigation }) {
   const [receptive, set_receptive] = useState('');
   const [followup, set_followup] = useState('');
   const [single_location, set_single_location] = useState(null);
+
+  const [feed_back, set_feed_back] = useState(null);
   
   const [webview_key, set_webview_key] = useState(0);
   const [current_location, set_current_location] = useState('-26.2041,28.0473');
@@ -72,7 +75,7 @@ function SW({ route, navigation }) {
     }
   }
   check_if_running();
-  
+  is_user_registered('user_registered');
   // setInterval(()=>{ set_webview_key(webview_key+1); console.log('webview_key: '+webview_key); },6000);
 
   function makeTwoDigits (time) {
@@ -104,7 +107,7 @@ function SW({ route, navigation }) {
         Location.stopLocationUpdatesAsync(CAPTURE_LOCATIONS_TASK);
         save_txt_file('running','Nothing.');
         currently_soul_winning('running');
-        alert('Soul winning done!');
+        // alert('Soul winning done!');
       }
     });
     set_zoom_level(10);
@@ -118,6 +121,8 @@ function SW({ route, navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalVisible2, setModalVisible2] = useState(false);
   const [modalVisible3, setModalVisible3] = useState(false);
+  const [modalVisible4, setModalVisible4] = useState(false);
+  const [reg_modalVisible, set_reg_ModalVisible] = useState(false);
   function hideModal() {
     setModalVisible(!modalVisible);
   }
@@ -127,11 +132,29 @@ function SW({ route, navigation }) {
   function hideModal3() {
     setModalVisible3(!modalVisible3);
   }
+  function hideModal4() {
+    setModalVisible4(!modalVisible4);
+  }
+  function hide_regModal() {
+    set_reg_ModalVisible(!reg_modalVisible);
+  }
   const [confirmText, setConfirmText] = useState('');
-  
+  async function is_user_registered(file_name) {
+    // save_txt_file('user_registered','No.');
+    let file = FileSystem.documentDirectory + 'user_registered' + '.txt';
+    let file_existance = await FileSystem.getInfoAsync(file,{ encoding: FileSystem.EncodingType.UTF8 });
+    if (file_existance.exists) {
+      let contents = await retrieve_txt_file(file_name);
+      let not_registered_locally = contents == 'No.';
+      if (not_registered_locally) {
+        set_reg_ModalVisible(true);
+        // console.log(contents + ' | reg_modalVisible: '+reg_modalVisible);
+      }
+    }
+  }
   async function currently_soul_winning(file_name) {
     let contents = await retrieve_txt_file(file_name);
-    console.log(contents);
+    // console.log(contents);
     let soul_winning_right_now = contents == 'Something.';
     if (soul_winning_right_now) {
       set_lead_user_btn_disabled(true);
@@ -161,6 +184,36 @@ function SW({ route, navigation }) {
     set_use_btn_disabled(true);
   }
   /////////////////////////////////////////
+  function save_user() {
+    let info = {
+      first_name: first_name_reg,
+      last_name: last_name_reg,
+      phone: phone_number_reg
+    };
+    console.log(info);
+    fetch('https://winsouls.co.za/app/user/register.php', {
+      method: 'post',
+      headers:{
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(info)
+    }).then((response)=>response.json()).then((responseJSon)=>{
+      set_first_name_reg('');
+      set_last_name_reg('');
+      set_phone_number_reg('');
+      if (responseJSon.status==1) {
+        save_txt_file('user_registered','Yes.');
+        set_reg_ModalVisible(false);
+        console.log(responseJSon);
+      }else{
+        save_txt_file('user_registered','No.');
+      }
+      alert(responseJSon.msg);
+    }).catch((error) => {
+      console.error(error);
+    });
+  }
   function save_details() {
     let info = {
       userId:user_details.id,
@@ -193,6 +246,11 @@ function SW({ route, navigation }) {
     // console.log('receptive: '+receptive);
     // console.log('followup: '+followup);
     // console.log('single_location: '+single_location);
+  }
+  function end_time() {
+    set_feed_back('');
+    stopCapturingBackroundLocations();
+    setModalVisible4(true);
   }
   function enterId() {
     set_area_ID('');
@@ -302,7 +360,7 @@ function SW({ route, navigation }) {
       id: "2",
       title: "Start as Regular",
       style: styles.btn,
-      bgColor: 'navy',
+      bgColor: 'teal',
       flex: 1,
       styleSub: {color:'white',textAlign: 'center', justifyContent: "center",fontSize: 16,},
       type: 'button',
@@ -312,7 +370,7 @@ function SW({ route, navigation }) {
       id: "3",
       title: "Start as Leader",
       style: styles.btn,
-      bgColor: 'navy',
+      bgColor: 'teal',
       flex: 1,
       styleSub: {color:'white',textAlign: 'center', justifyContent: "center",fontSize: 16,},
       type: 'button',
@@ -336,25 +394,35 @@ function SW({ route, navigation }) {
       flex: 1,
       styleSub: {color:'white',textAlign: 'center', justifyContent: "center",fontSize: 16,},
       type: 'button',
-      onPress: () => stopCapturingBackroundLocations(),
+      onPress: () => end_time(),
       btnDisabled: end_btn_disabled
     }
-    ,{
-      id: "15",
-      title: "Use Locations",
-      style: styles.btn2,
-      bgColor: 'maroon',
-      flex: 1,
-      styleSub: {color:'white',textAlign: 'center', justifyContent: "center",fontSize: 16,},
-      type: 'button',
-      onPress: () => confirmInfo(),
-      btnDisabled: use_btn_disabled
-    }
+    // ,{
+    //   id: "15",
+    //   title: "Use Locations",
+    //   style: styles.btn2,
+    //   bgColor: 'maroon',
+    //   flex: 1,
+    //   styleSub: {color:'white',textAlign: 'center', justifyContent: "center",fontSize: 16,},
+    //   type: 'button',
+    //   onPress: () => confirmInfo(),
+    //   btnDisabled: use_btn_disabled
+    // }
     // ,{
     //   id: "16",
     //   title: "My Map",
     //   type: 'webMap'
     // }
+    ,{
+      id: '17',
+      title: "Modal4",
+      modalVisible: modalVisible4,
+      hideModal: () => hideModal4(),
+      value: feed_back,
+      func: set_feed_back,
+      send: () => confirmInfo(),
+      type: 'end_time',
+    }
     ,{
       id: '18',
       title: "Modal",
@@ -400,7 +468,24 @@ function SW({ route, navigation }) {
       webview_key: webview_key,
       type: 'capture_details',
       title: 'Capturing person\'s details'
-    },
+    }
+    ,{
+      id: '21',
+      title: "Reg Modal",
+      modalVisible: reg_modalVisible,
+      hideModal: () => hide_regModal(),
+      go: () => save_user(),
+      first_name_setter: set_first_name_reg,
+      last_name_setter: set_last_name_reg,
+      phone_number_setter: set_phone_number_reg,
+      first_name: first_name_reg,
+      last_name: last_name_reg,
+      phone_number: phone_number_reg,
+      webview_key_setter: set_webview_key,
+      webview_key: webview_key,
+      type: 'register_user',
+      title: 'User Registration'
+    }
   ];
   
   return (
@@ -419,7 +504,7 @@ function SW({ route, navigation }) {
         </WebView>
         <FlatList
         data={DATA}
-        style = {{width:'100%',bottom:'-3%',position:'absolute', zIndex:200 }}
+        style = {{width:'100%',bottom:'-2%',position:'absolute', zIndex:200 }}
         numColumns = {2}
         renderItem={renderItem}
       />

@@ -5,8 +5,10 @@ import { useState, useEffect } from "react";
 import {Picker} from '@react-native-community/picker';
 import MyModal from '../myModal';
 import AreaId from '../myModal/areaId';
+import EndTime from '../myModal/end_time';
 import ListAreas from '../myModal/list_areas';
 import Capture_Interaction from '../myModal/capture_interaction';
+import Register_User from '../myModal/user_registration';
 const renderItem = ({ item }) => {
     const backgroundColor = "#f9c2ff";
     if (item.type=='textbox') {
@@ -28,6 +30,17 @@ const renderItem = ({ item }) => {
         val={item.value} 
         mSet={item.hideModal} 
         start={item.go}
+        />
+      );
+    }
+    if (item.type=='end_time') {
+      return (
+        <EndTime 
+        modalVisible={item.modalVisible} 
+        func={item.func} 
+        val={item.value} 
+        mSet={item.hideModal} 
+        send={item.send}
         />
       );
     }
@@ -65,6 +78,27 @@ const renderItem = ({ item }) => {
         receptive={item.receptive}
         followup={item.followup}
         coords={item.coords}
+
+        webview_key_setter={item.webview_key_setter}
+        webview_key={item.webview_key}
+        />
+      );
+    }
+    if (item.type=='register_user') {
+      // alert('Reg');
+      return (
+        <Register_User 
+        modalVisible={item.modalVisible} 
+        mSet={item.hideModal} 
+        go={item.go}
+        title={item.title}
+        first_name_setter={item.first_name_setter}
+        last_name_setter={item.last_name_setter}
+        phone_number_setter={item.phone_number_setter}
+
+        first_name={item.first_name}
+        last_name={item.last_name}
+        phone_number={item.phone_number}
 
         webview_key_setter={item.webview_key_setter}
         webview_key={item.webview_key}
@@ -123,8 +157,9 @@ const renderItem = ({ item }) => {
     }
     if (item.type=='button') {
       let bgColor = (item.bgColor!==undefined)? item.bgColor:'#3293a8';
+      let style = (item.btnDisabled)? {transform: [{ scale: 0 }]} : [item.style,{backgroundColor:bgColor}];
       return (
-        <TouchableOpacity onPress={item.onPress} style={[item.style,{backgroundColor:bgColor}]} disabled={item.btnDisabled}>
+        <TouchableOpacity onPress={item.onPress} style={style} disabled={item.btnDisabled}>
           <Text style={item.styleSub}>{item.title}</Text>
         </TouchableOpacity>
       );

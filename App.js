@@ -13,6 +13,7 @@ import Register_Area from './app/components/register_area';
 
 import { createDrawerNavigator } from '@react-navigation/drawer';
 //cd documents/reactnativestuff/winsouls
+
 function LogoTitle() {
   return (
       <Image
