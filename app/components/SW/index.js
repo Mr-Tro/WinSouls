@@ -21,9 +21,9 @@ async function retrieve_txt_file(name) {
 }
 
 function SW({ route, navigation }) {
-  const user_details = {status:'Data Matched',full_name:'Test',cell:'0000',id:'1'};
+  const [user_details,set_user_details] = useState({});
+  is_user_registered('user_registered');
   // const { user_details } = route.params;
-  // console.log(user_details);
   //////Registration setters////////
   
   const [first_name_reg, set_first_name_reg] = useState('');
@@ -75,8 +75,6 @@ function SW({ route, navigation }) {
     }
   }
   check_if_running();
-  is_user_registered('user_registered');
-  // setInterval(()=>{ set_webview_key(webview_key+1); console.log('webview_key: '+webview_key); },6000);
 
   function makeTwoDigits (time) {
     const timeString = `${time}`;
@@ -140,15 +138,22 @@ function SW({ route, navigation }) {
   }
   const [confirmText, setConfirmText] = useState('');
   async function is_user_registered(file_name) {
-    // save_txt_file('user_registered','No.');
+    // save_txt_file('user_registered',JSON.stringify({
+    //   user: '',
+    //   reg: 'No'
+    // }));
     let file = FileSystem.documentDirectory + 'user_registered' + '.txt';
     let file_existance = await FileSystem.getInfoAsync(file,{ encoding: FileSystem.EncodingType.UTF8 });
     if (file_existance.exists) {
       let contents = await retrieve_txt_file(file_name);
-      let not_registered_locally = contents == 'No.';
+      let not_registered_locally = JSON.parse(contents).reg == 'No';
       if (not_registered_locally) {
         set_reg_ModalVisible(true);
-        // console.log(contents + ' | reg_modalVisible: '+reg_modalVisible);
+      }else{
+        if(Object.keys(user_details)<2){
+          set_user_details(JSON.parse(contents).user);
+        }
+        // console.log(user_details);
       }
     }
   }
@@ -190,7 +195,7 @@ function SW({ route, navigation }) {
       last_name: last_name_reg,
       phone: phone_number_reg
     };
-    console.log(info);
+    // console.log(info);
     fetch('https://winsouls.co.za/app/user/register.php', {
       method: 'post',
       headers:{
@@ -202,14 +207,29 @@ function SW({ route, navigation }) {
       set_first_name_reg('');
       set_last_name_reg('');
       set_phone_number_reg('');
+      let reg_status;
       if (responseJSon.status==1) {
-        save_txt_file('user_registered','Yes.');
+        let user = {
+          full_name:first_name_reg+' '+last_name_reg,
+          cell:phone_number_reg,
+          id:responseJSon.userId
+        };
+        reg_status = {
+          user: user,
+          reg: 'Yes'
+        }
+        // save_txt_file('user_registered',JSON.stringify(reg_status));
         set_reg_ModalVisible(false);
-        console.log(responseJSon);
+        // console.log(user);
       }else{
-        save_txt_file('user_registered','No.');
+        reg_status = {
+          user: '',
+          reg: 'No'
+        }
+        // save_txt_file('user_registered','No.');
       }
-      alert(responseJSon.msg);
+      save_txt_file('user_registered',JSON.stringify(reg_status));
+      // console.log(responseJSon.msg);
     }).catch((error) => {
       console.error(error);
     });
@@ -310,8 +330,10 @@ function SW({ route, navigation }) {
 
   function getArea() {
     let info = {
-      ID:user_details.id
+      ID:user_details.id,
+      current_location: current_location
     };
+    // console.log(info);
     fetch('https://winsouls.co.za/app/area/get.php', {
       method: 'post',
       headers:{
@@ -368,7 +390,7 @@ function SW({ route, navigation }) {
       btnDisabled: reg_user_btn_disabled
     },{
       id: "3",
-      title: "Start as Leader",
+      title: "Start as Organiser",
       style: styles.btn,
       bgColor: 'teal',
       flex: 1,
@@ -532,7 +554,7 @@ const styles = StyleSheet.create({
       textAlign: "center",
       backgroundColor: '#3293a8',
       color: 'white',
-      borderRadius: 5,
+      borderRadius: 20,
       // borderWidth: 1,
       // borderRadius: 5,
       marginBottom: 10
